@@ -23,7 +23,7 @@ export const cvData = {
     },
     languages: [
       { name: "Spanish", level: "Native" },
-      { name: "English", level: "Proficient" }
+      { name: "English", level: "Proficient - [C1]" }
     ],
     experiences: [
       {
@@ -139,7 +139,7 @@ export const cvData = {
     },
     languages: [
       { name: "Español", level: "Nativo" },
-      { name: "Inglés", level: "Avanzado" }
+      { name: "Inglés", level: "Avanzado - [C1]" }
     ],
     experiences: [
       {
