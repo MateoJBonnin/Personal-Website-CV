@@ -51,7 +51,7 @@ export const cvData = {
       {
         company: "Jam City",
         role: "Semi Senior Unity Developer",
-        modality: "Full Time / On-site",
+        modality: "Full Time - On-site",
         date: "Mar 2018 - Jul 2020",
         tags: ["Casual Games", "Mobile", "iOS", "Android", "Social Features", "UI Architecture", "Core Mechanics", "Large-scale Team", "LiveOps"],
         bullets: [
@@ -167,7 +167,7 @@ export const cvData = {
       {
         company: "Jam City",
         role: "Semi Senior Unity Developer",
-        modality: "Full Time / Presencial",
+        modality: "Full Time - Presencial",
         date: "Mar 2018 - Jul 2020",
         tags: ["Casual Games", "Mobile", "iOS", "Android", "Mecanicas Sociales", "Implementación de UI", "Mecánicas Principales", "Equipo Completo: QA - Liveops - Devs"],
         bullets: [
