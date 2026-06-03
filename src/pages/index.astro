@@ -42,6 +42,9 @@ const esSkills = [
                 <h1 class="gradient-text">{name}</h1>
                 
                 <div class="control-cluster">
+                    <button id="hero-capture" class="control-btn" aria-label="Generate LinkedIn Hero Banner" title="Generate LinkedIn Thumbnail" style="display: none;">
+                        <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: var(--text-color);"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 5H5l3.5-4.5z"/></svg>
+                    </button>
                     <button id="lang-toggle" class="control-btn lang-btn" aria-label="Switch Language / Cambiar Idioma">
                         <span class="lang-en">ES</span>
                         <span class="lang-es">EN</span>
@@ -76,7 +79,6 @@ const esSkills = [
 
     <main>
         <section class="skills-grid">
-            <!-- ENGLISH BENTO BOX -->
             <div class="panel lang-en">
                 <h2>{cvData.en.sections.skills}</h2>
                 <div class="bento-container">
@@ -88,7 +90,6 @@ const esSkills = [
                 </div>
             </div>
 
-            <!-- SPANISH BENTO BOX -->
             <div class="panel lang-es">
                 <h2>{cvData.es.sections.skills}</h2>
                 <div class="bento-container">
@@ -100,7 +101,6 @@ const esSkills = [
                 </div>
             </div>
 
-            <!-- ENGLISH LANGUAGES BENTO -->
             <div class="panel lang-en">
                 <h2>{cvData.en.sections.languages}</h2>
                 <div class="bento-container bento-lang-container">
@@ -113,7 +113,6 @@ const esSkills = [
                 </div>
             </div>
 
-            <!-- SPANISH LANGUAGES BENTO -->
             <div class="panel lang-es">
                 <h2>{cvData.es.sections.languages}</h2>
                 <div class="bento-container bento-lang-container">
@@ -127,7 +126,6 @@ const esSkills = [
             </div>
         </section>
 
-        <!-- Experience Section -->
         <section>
             <h2 class="lang-en">{cvData.en.sections.experience}</h2>
             <h2 class="lang-es">{cvData.es.sections.experience}</h2>
@@ -165,7 +163,6 @@ const esSkills = [
             </div>
         </section>
 
-        <!-- Projects Section -->
         <section>
             <h2 class="lang-en">{cvData.en.sections.projects}</h2>
             <h2 class="lang-es">{cvData.es.sections.projects}</h2>
@@ -285,7 +282,7 @@ const esSkills = [
         });
 
         document.addEventListener('click', (e) => {
-            const btn = e.target.closest('.scroll-btn');
+            const btn = (e.target as HTMLElement).closest('.scroll-btn');
             if (!btn) return;
             
             const scroller = btn.parentElement?.querySelector('.media-scroller');
@@ -296,6 +293,176 @@ const esSkills = [
                 } else {
                     scroller.scrollBy({ left: width, behavior: 'smooth' });
                 }
+            }
+        });
+
+        // NEW: STEALTH DISCOVERY SYSTEM FOR GENERATOR BUTTON
+        const heroBtn = document.getElementById('hero-capture');
+        
+        function evalStealthAccess() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('debug') === 'true' || localStorage.getItem('debug-banner') === 'true') {
+                if (heroBtn) heroBtn.style.display = 'flex';
+            }
+        }
+        
+        // Check triggers on load
+        evalStealthAccess();
+
+        // Hotkey activation: Ctrl + Shift + H (Toggles Button visibility anywhere)
+        window.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'h') {
+                e.preventDefault();
+                if (heroBtn) {
+                    const isHidden = heroBtn.style.display === 'none';
+                    heroBtn.style.display = isHidden ? 'flex' : 'none';
+                    localStorage.setItem('debug-banner', isHidden ? 'true' : 'false');
+                }
+            }
+        });
+
+        // HERO BANNER EXPORT CAPTURE LOGIC
+        heroBtn?.addEventListener('click', async () => {
+            const originalText = heroBtn.innerHTML;
+            heroBtn.innerHTML = '...';
+            heroBtn.style.pointerEvents = 'none';
+
+            try {
+                if (!(window as any).html2canvas) {
+                    await new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                        script.onload = resolve;
+                        script.onerror = reject;
+                        document.head.appendChild(script);
+                    });
+                }
+
+                const currentLang = document.documentElement.getAttribute('data-lang') || 'en';
+                const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+
+                // Setup workspace wrapper targeting current preferences
+                const canvasBox = document.createElement('div');
+                canvasBox.setAttribute('data-theme', currentTheme);
+                canvasBox.setAttribute('data-lang', currentLang);
+                canvasBox.className = 'hero-landscape-workspace';
+
+                const activeProfileNode = document.querySelector('.profile-container');
+                if (!activeProfileNode) return;
+                const profileClone = activeProfileNode.cloneNode(true) as HTMLElement;
+
+                // Strip UI panels out of layout
+                profileClone.querySelector('.control-cluster')?.remove();
+                profileClone.querySelector('.icon-container')?.remove();
+
+                // Build modern content columns
+                const columnsLayout = document.createElement('div');
+                columnsLayout.className = 'workspace-columns';
+
+                const leftColumn = document.createElement('div');
+                leftColumn.className = 'workspace-col-left';
+
+                const rightColumn = document.createElement('div');
+                rightColumn.className = 'workspace-col-right';
+
+                // Extract Skills Group
+                const skillsGroupSource = document.querySelector(`.panel.lang-${currentLang} .bento-container`);
+                const skillsGroupLabel = document.querySelector(`.skills-grid .panel.lang-${currentLang} h2`)?.textContent || 'Skills';
+                if (skillsGroupSource) {
+                    const groupContainer = document.createElement('div');
+                    groupContainer.className = 'workspace-section-card';
+                    const title = document.createElement('h3');
+                    title.textContent = skillsGroupLabel;
+                    groupContainer.appendChild(title);
+                    groupContainer.appendChild(skillsGroupSource.cloneNode(true));
+                    leftColumn.appendChild(groupContainer);
+                }
+
+                // Extract Spoken Languages Bento Cards
+                const languagesSource = document.querySelector(`.panel.lang-${currentLang} .bento-lang-container`);
+                const languagesLabel = document.querySelector(`.skills-grid .panel.lang-${currentLang}:nth-of-type(3) h2, .skills-grid .panel.lang-${currentLang}:nth-of-type(4) h2`)?.textContent || 'Languages';
+                if (languagesSource) {
+                    const groupContainer = document.createElement('div');
+                    groupContainer.className = 'workspace-section-card';
+                    const title = document.createElement('h3');
+                    title.textContent = languagesLabel;
+                    groupContainer.appendChild(title);
+                    groupContainer.appendChild(languagesSource.cloneNode(true));
+                    leftColumn.appendChild(groupContainer);
+                }
+
+                // Extract Featured Projects titles + stack tags elegantly
+                const projectCards = document.querySelectorAll(`.projects-container.lang-${currentLang} .project-card`);
+                if (projectCards.length > 0) {
+                    const projectsSection = document.createElement('div');
+                    projectsSection.className = 'workspace-section-card full-height';
+                    
+                    const projectsHeader = document.createElement('h3');
+                    projectsHeader.textContent = currentLang === 'es' ? 'Proyectos Destacados' : 'Featured Projects';
+                    projectsSection.appendChild(projectsHeader);
+
+                    const projectsListWrapper = document.createElement('div');
+                    projectsListWrapper.className = 'workspace-projects-list';
+
+                    // Map down top projects to preserve canvas sizing limits safely
+                    Array.from(projectCards).slice(0, 2).forEach(card => {
+                        const originalHeader = card.querySelector('h3');
+                        if (originalHeader) {
+                            const compactItem = document.createElement('div');
+                            compactItem.className = 'workspace-project-item';
+                            compactItem.appendChild(originalHeader.cloneNode(true));
+                            
+                            // Keep basic bullet definitions clean & stripped
+                            const originalBullets = card.querySelector('.proj-bullets');
+                            if (originalBullets) {
+                                const bulletClone = originalBullets.cloneNode(true) as HTMLElement;
+                                if (bulletClone.children.length > 1) {
+                                    while(bulletClone.children.length > 1) {
+                                        bulletClone.removeChild(bulletClone.lastChild!);
+                                    }
+                                }
+                                compactItem.appendChild(bulletClone);
+                            }
+                            projectsListWrapper.appendChild(compactItem);
+                        }
+                    });
+
+                    projectsSection.appendChild(projectsListWrapper);
+                    rightColumn.appendChild(projectsSection);
+                }
+
+                columnsLayout.appendChild(leftColumn);
+                columnsLayout.appendChild(rightColumn);
+
+                const innerWrapper = document.createElement('div');
+                innerWrapper.className = 'workspace-inner';
+                innerWrapper.appendChild(profileClone);
+                innerWrapper.appendChild(columnsLayout);
+
+                canvasBox.appendChild(innerWrapper);
+                document.body.appendChild(canvasBox);
+
+                // Safe operational yield delay
+                await new Promise(r => setTimeout(r, 250));
+
+                const capturedCanvas = await (window as any).html2canvas(canvasBox, {
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: currentTheme === 'dark' ? '#0b090c' : '#faf8fa',
+                    scale: 2
+                });
+
+                const downloadAnchor = document.createElement('a');
+                downloadAnchor.download = `GameDev_Hero_${name.replace(/\s+/g, '_')}_${currentLang}.png`;
+                downloadAnchor.href = capturedCanvas.toDataURL('image/png');
+                downloadAnchor.click();
+
+                document.body.removeChild(canvasBox);
+            } catch (err) {
+                console.error("Hero generation failed:", err);
+            } {
+                heroBtn.innerHTML = originalText;
+                heroBtn.style.pointerEvents = 'auto';
             }
         });
     </script>
@@ -400,10 +567,6 @@ const esSkills = [
     .icon-mail:hover { border-color: #db2777 !important; background: #db2777 !important; }
     .icon-mail:hover svg { fill: #ffffff !important; }
 
-    /* ================================================= */
-    /* --- NEW BENTO BOX LAYOUT FOR SKILLS / LANGS ---   */
-    /* ================================================= */
-    
     .skills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; align-items: start; }
     .panel { padding: 30px; border-radius: 24px; display: flex; flex-direction: column; background: var(--bg-prime); border: 1px solid var(--border-prime); }
     .panel h2 { margin-top: 0; margin-bottom: 24px; border-bottom: 1px solid var(--border-prime); }
@@ -438,7 +601,6 @@ const esSkills = [
         font-size: 0.95rem;
     }
 
-    /* Specific overrides for the Spoken Languages Bento cards */
     .bento-lang {
         flex-direction: column;
         align-items: flex-start;
@@ -458,7 +620,6 @@ const esSkills = [
         text-transform: uppercase;
         letter-spacing: 0.05em;
     }
-    /* ================================================= */
 
     .experience-container { display: flex; flex-direction: column; gap: 24px; }
     .experience-item { padding: 32px; border-radius: 24px; border: 1px solid var(--border-prime); }
@@ -466,8 +627,6 @@ const esSkills = [
     .experience-item:nth-of-type(even) { background-color: var(--bg-sec); }
     
     .exp-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
-    
-    /* Configured exp-title-group as a column to stack modality tag cleanly under the title */
     .exp-title-group { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; flex: 1 1 auto; }
     .exp-title-group h3 { font-size: 1.3rem; margin: 0; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
     
@@ -475,7 +634,6 @@ const esSkills = [
     .role-text { color: var(--text-color); font-style: normal; font-weight: 600; }
     .exp-date { color: var(--text-muted); font-size: 0.95rem; font-weight: 500; white-space: nowrap; margin-top: 4px; }
     
-    /* Subtle, monochrome tag design with optimized text/border contrast */
     .modality-tag { 
         font-size: 0.72rem; 
         font-weight: 600; 
@@ -582,6 +740,140 @@ const esSkills = [
         .project-card { padding: 20px; border-radius: 20px; gap: 16px; }
         .project-media { min-width: unset; width: 100%; }
     }
+
+    /* ========================================== */
+    /* MINI APPLICATION LANDSCAPE HERO WORKSPACE  */
+    /* ========================================== */
+    .hero-landscape-workspace {
+        position: absolute;
+        left: -9999px;
+        top: -9999px;
+        width: 1200px;
+        height: 630px;
+        box-sizing: border-box;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        padding: 45px 60px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        overflow: hidden;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    .workspace-inner {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+    }
+    .hero-landscape-workspace .profile-container {
+        padding-bottom: 0 !important;
+        border: none !important;
+        gap: 24px !important;
+    }
+    .hero-landscape-workspace .profile-pic-crop {
+        width: 100px !important;
+        height: 100px !important;
+    }
+    .hero-landscape-workspace .gradient-text {
+        background: none !important;
+        -webkit-background-clip: initial !important;
+        -webkit-text-fill-color: initial !important;
+        color: var(--accent-color) !important;
+        font-size: 2.6rem !important;
+        line-height: 1.1;
+    }
+    .hero-landscape-workspace .subtitle {
+        font-size: 1.2rem !important;
+        margin-top: 4px;
+    }
+    .workspace-columns {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        width: 100%;
+        align-items: start;
+    }
+    .workspace-col-left, .workspace-col-right {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    .workspace-section-card {
+        background: var(--bg-prime);
+        border: 1px solid var(--border-prime);
+        padding: 18px 22px;
+        border-radius: 16px;
+    }
+    .workspace-section-card h3 {
+        margin-top: 0;
+        margin-bottom: 12px;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-muted);
+        border-bottom: 1px solid var(--border-prime);
+        padding-bottom: 6px;
+    }
+    .hero-landscape-workspace .bento-container {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+    }
+    .hero-landscape-workspace .bento-item {
+        padding: 5px 10px !important;
+        transform: none !important;
+        box-shadow: none !important;
+        border-radius: 6px !important;
+    }
+    .hero-landscape-workspace .bento-text {
+        font-size: 0.8rem !important;
+    }
+    .hero-landscape-workspace .bento-lang {
+        padding: 6px 12px !important;
+    }
+    .hero-landscape-workspace .bento-lang .bento-text {
+        font-size: 0.85rem !important;
+    }
+    .workspace-projects-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .workspace-project-item {
+        background: var(--bg-sec);
+        padding: 12px 16px;
+        border-radius: 10px;
+        border: 1px solid var(--border-prime);
+    }
+    .workspace-project-item h3 {
+        font-size: 1rem !important;
+        color: var(--text-headline) !important;
+        margin: 0 0 4px 0 !important;
+        border: none !important;
+        padding: 0 !important;
+        text-transform: none !important;
+        letter-spacing: normal !important;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .workspace-project-item .tech-tag {
+        margin-left: auto;
+        font-size: 0.72rem !important;
+        padding: 1px 6px !important;
+    }
+    .workspace-project-item .proj-bullets {
+        padding-left: 12px !important;
+        color: var(--text-muted) !important;
+        font-size: 0.8rem !important;
+        margin: 0 !important;
+        line-height: 1.3;
+    }
+    .workspace-project-item .proj-bullets li {
+        margin: 0 !important;
+    }
+    /* ========================================== */
 
     @media print {
         body { background-color: #fff !important; color: #000 !important; margin: 0; padding: 10px 20px; font-size: 10pt !important; line-height: 1.4 !important; }
